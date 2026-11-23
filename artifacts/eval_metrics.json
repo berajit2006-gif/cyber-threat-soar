@@ -1,0 +1,125 @@
+{
+  "accuracy": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "macro_f1": 1.0,
+  "weighted_roc_auc": 1.0,
+  "class_labels": [
+    "DDoS_Hulk",
+    "Normal",
+    "PortScan",
+    "SQL_Injection",
+    "SSH_BruteForce"
+  ],
+  "confusion_matrix": [
+    [
+      240,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      240,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      240,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      240,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      240
+    ]
+  ],
+  "per_class": {
+    "DDoS_Hulk": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 240
+    },
+    "Normal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 240
+    },
+    "PortScan": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 240
+    },
+    "SQL_Injection": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 240
+    },
+    "SSH_BruteForce": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 240
+    }
+  },
+  "global_feature_importances": [
+    {
+      "feature": "flow_duration",
+      "importance": 0.3207
+    },
+    {
+      "feature": "total_fwd_packets",
+      "importance": 0.2182
+    },
+    {
+      "feature": "pkt_len_variance",
+      "importance": 0.1638
+    },
+    {
+      "feature": "flow_packets_per_sec",
+      "importance": 0.1598
+    },
+    {
+      "feature": "dst_port",
+      "importance": 0.1061
+    },
+    {
+      "feature": "flow_bytes_per_sec",
+      "importance": 0.0275
+    },
+    {
+      "feature": "total_bwd_packets",
+      "importance": 0.0019
+    },
+    {
+      "feature": "flow_iat_mean",
+      "importance": 0.0017
+    },
+    {
+      "feature": "ack_flag_count",
+      "importance": 0.0003
+    },
+    {
+      "feature": "syn_flag_count",
+      "importance": 0.0
+    }
+  ]
+}

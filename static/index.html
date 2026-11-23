@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier-1 Autonomous AI SOC & XAI Forensics Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              DEFAULT: '#070b14',
+              900: '#070b14',
+              800: '#0a0f1d',
+              card: '#0e1626',
+              border: '#1e293b',
+              hover: '#162035'
+            },
+            accent: {
+              cyan: '#00e5ff',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              crimson: '#ff3b5c',
+              purple: '#a855f7'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #070b14;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .font-mono-numbers {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070b14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    /* Glow utilities */
+    .glow-cyan {
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+    }
+    .glow-crimson {
+      box-shadow: 0 0 15px rgba(255, 59, 92, 0.25);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    .pulse-glow {
+      animation: pulseGlow 2s infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.96); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-obsidian-900 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
+
+  <!-- ================= TOP COMMAND HEADER ================= -->
+  <header class="border-b border-obsidian-border bg-obsidian-800/95 backdrop-blur sticky top-0 z-40 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Title & Live Status Indicator -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              AUTONOMOUS SOC COMMAND CENTER
+              <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">TIER-1</span>
+            </h1>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-slate-400 mt-0.5">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+            <span class="font-mono font-medium tracking-wide text-cyan-300">HYBRID ENGINE + SHAP ONLINE</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400">CIC-IDS2017 Model Active</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Stream Toggle & Navigation -->
+      <div class="flex items-center space-x-4">
+        <!-- Live Stream Toggle -->
+        <div class="flex items-center bg-obsidian-card border border-obsidian-border rounded-lg p-1">
+          <span class="text-xs font-mono font-semibold px-2.5 text-slate-300">LIVE STREAM</span>
+          <button id="streamToggleBtn" onclick="toggleLiveStream()" class="flex items-center space-x-1.5 px-3 py-1 rounded text-xs font-mono font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span id="streamDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="streamText">ON</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= KPI STRIP ================= -->
+  <section class="max-w-7xl mx-auto w-full px-6 pt-5 pb-2">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+      <!-- KPI 1 -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 relative overflow-hidden shadow-sm">
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Total Flows Inspected</div>
+        <div id="kpiTotalFlows" class="text-2xl font-bold font-mono-numbers text-white mt-1">0</div>
+        <div class="text-[11px] text-cyan-400 font-mono mt-1 flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Real-time Telemetry
+        </div>
+        <div class="absolute -right-3 -bottom-3 w-14 h-14 bg-cyan-500/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 relative overflow-hidden shadow-sm">
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Threats Detected</div>
+        <div id="kpiThreats" class="text-2xl font-bold font-mono-numbers text-accent-crimson mt-1">0</div>
+        <div class="text-[11px] text-slate-400 font-mono mt-1">Supervised + Anomaly</div>
+        <div class="absolute -right-3 -bottom-3 w-14 h-14 bg-accent-crimson/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 relative overflow-hidden shadow-sm">
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Zero-Day Anomalies</div>
+        <div id="kpiZeroDay" class="text-2xl font-bold font-mono-numbers text-purple-400 mt-1">0</div>
+        <div class="text-[11px] text-purple-300 font-mono mt-1">Isolation Forest Unseen</div>
+        <div class="absolute -right-3 -bottom-3 w-14 h-14 bg-purple-500/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 relative overflow-hidden shadow-sm">
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Active SOAR Blocks</div>
+        <div id="kpiSoarBlocks" class="text-2xl font-bold font-mono-numbers text-accent-amber mt-1">0</div>
+        <div class="text-[11px] text-amber-300 font-mono mt-1">Firewall Contained</div>
+        <div class="absolute -right-3 -bottom-3 w-14 h-14 bg-accent-amber/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- KPI 5 -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 relative overflow-hidden shadow-sm col-span-2 md:col-span-1">
+        <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Model Macro F1</div>
+        <div id="kpiMacroF1" class="text-2xl font-bold font-mono-numbers text-accent-emerald mt-1">0.999</div>
+        <div class="text-[11px] text-emerald-400 font-mono mt-1">Target: &gt; 0.900</div>
+        <div class="absolute -right-3 -bottom-3 w-14 h-14 bg-accent-emerald/5 rounded-full pointer-events-none"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB NAVIGATION ================= -->
+  <section class="max-w-7xl mx-auto w-full px-6 pt-3">
+    <div class="flex border-b border-obsidian-border space-x-1 sm:space-x-3 text-sm font-medium">
+      <button onclick="switchTab('live-feed')" id="tabBtn-live-feed" class="tab-btn px-4 py-2.5 border-b-2 font-semibold text-cyan-400 border-cyan-400 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        1. Live Threat Feed
+      </button>
+      <button onclick="switchTab('batch-csv')" id="tabBtn-batch-csv" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        2. Batch CSV Forensics
+      </button>
+      <button onclick="switchTab('model-eval')" id="tabBtn-model-eval" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        3. Model & XAI Metrics
+      </button>
+      <button onclick="switchTab('soar-console')" id="tabBtn-soar-console" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        4. Active SOAR Console
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= TAB CONTENT AREA ================= -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-5 flex-1">
+
+    <!-- ================= TAB 1: LIVE SOC & THREAT FEED ================= -->
+    <div id="tabContent-live-feed" class="tab-content space-y-6">
+      
+      <!-- Attack Injection Control Deck -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Attack Injection Control Deck</h2>
+          </div>
+          <span class="text-xs font-mono text-slate-400">Simulate Network Attack Vectors in Real Time</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+          <button onclick="simulateAttack('Normal')" class="sim-btn group px-3 py-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1">
+            <span>Normal Flow</span>
+            <span class="text-[10px] text-slate-400 font-sans group-hover:text-emerald-300">Baseline TCP</span>
+          </button>
+          <button onclick="simulateAttack('DDoS_Hulk')" class="sim-btn group px-3 py-2.5 rounded-lg bg-crimson-500/10 hover:bg-crimson-500/20 border border-red-500/30 text-red-400 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1">
+            <span>DDoS Hulk</span>
+            <span class="text-[10px] text-slate-400 font-sans group-hover:text-red-300">HTTP Flood T1498</span>
+          </button>
+          <button onclick="simulateAttack('SSH_BruteForce')" class="sim-btn group px-3 py-2.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1">
+            <span>SSH Brute Force</span>
+            <span class="text-[10px] text-slate-400 font-sans group-hover:text-amber-300">Port 22 T1110</span>
+          </button>
+          <button onclick="simulateAttack('PortScan')" class="sim-btn group px-3 py-2.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1">
+            <span>Port Scan</span>
+            <span class="text-[10px] text-slate-400 font-sans group-hover:text-yellow-300">SYN Sweep T1046</span>
+          </button>
+          <button onclick="simulateAttack('SQL_Injection')" class="sim-btn group px-3 py-2.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1">
+            <span>SQL Injection</span>
+            <span class="text-[10px] text-slate-400 font-sans group-hover:text-rose-300">Web Exploit T1190</span>
+          </button>
+          <button onclick="simulateAttack('ZeroDay_Exfiltration')" class="sim-btn group px-3 py-2.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-300 text-xs font-mono font-semibold transition-all flex flex-col items-center justify-center gap-1 glow-crimson">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
+              Zero-Day Anomaly
+            </span>
+            <span class="text-[10px] text-purple-400/80 font-sans group-hover:text-purple-200">Isolation Forest T1048</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Telemetry Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Chart 1: Real-time Risk Score Timeline -->
+        <div class="lg:col-span-2 bg-obsidian-card border border-obsidian-border rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Real-Time Threat Risk Score Timeline</h3>
+              <p class="text-[11px] text-slate-400">Continuous 0–100 Dynamic Risk Score Monitoring</p>
+            </div>
+            <span class="text-xs font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">Sliding Window (30s)</span>
+          </div>
+          <div class="relative flex-1 min-h-[190px]">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Threat Vector Breakdown -->
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Threat Vector Distribution</h3>
+              <p class="text-[11px] text-slate-400">Observed Attack Class Proportion</p>
+            </div>
+          </div>
+          <div class="relative flex-1 min-h-[190px] flex items-center justify-center">
+            <canvas id="distributionChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Alert Feed Table -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl overflow-hidden shadow-sm">
+        <div class="px-5 py-3.5 border-b border-obsidian-border flex flex-wrap items-center justify-between gap-3 bg-obsidian-800/50">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Live Network Intrusion Feed</h3>
+            <span id="alertCountBadge" class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">0 events</span>
+          </div>
+          <p class="text-xs text-slate-400">Click any row to open the <span class="text-cyan-400 font-medium">XAI Forensic & SOAR Inspection Drawer</span></p>
+        </div>
+
+        <div class="overflow-x-auto max-h-[460px] overflow-y-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-obsidian-800 text-slate-400 uppercase font-mono tracking-wider sticky top-0 z-10 border-b border-obsidian-border">
+              <tr>
+                <th class="py-2.5 px-3">Timestamp</th>
+                <th class="py-2.5 px-3">Source IP</th>
+                <th class="py-2.5 px-3">Dst Port</th>
+                <th class="py-2.5 px-3">Threat Classification</th>
+                <th class="py-2.5 px-3">Engine Source</th>
+                <th class="py-2.5 px-3 min-w-[120px]">Risk Score</th>
+                <th class="py-2.5 px-3">MITRE ID</th>
+                <th class="py-2.5 px-3">Status</th>
+                <th class="py-2.5 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="alertsTableBody" class="divide-y divide-obsidian-border font-mono-numbers">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= TAB 2: BATCH CSV FORENSIC ANALYZER ================= -->
+    <div id="tabContent-batch-csv" class="tab-content hidden space-y-6">
+      
+      <!-- Upload Zone & Quick Sample Button -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex-1">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Batch Network Flow Forensic Ingestion</h2>
+            <p class="text-xs text-slate-400 mt-1">Upload a CIC-IDS2017 compatible CSV dataset (10 numerical features) for bulk high-throughput ML inference, SHAP attribution, and zero-day anomaly discovery.</p>
+          </div>
+          <!-- One-click Sample Run -->
+          <button onclick="runSampleCSV()" id="runSampleBtn" class="px-4 py-2.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold transition-all flex items-center gap-2 glow-cyan whitespace-nowrap">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Run Sample CIC-IDS2017 Dataset (50 Flows)
+          </button>
+        </div>
+
+        <!-- Drag & Drop Dropzone -->
+        <div id="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="mt-5 border-2 border-dashed border-obsidian-border rounded-xl p-8 text-center bg-obsidian-900/40 hover:border-cyan-500/50 transition-colors cursor-pointer">
+          <input type="file" id="csvFileInput" accept=".csv" onchange="handleFileSelect(event)" class="hidden">
+          <div onclick="document.getElementById('csvFileInput').click()" class="flex flex-col items-center justify-center space-y-2">
+            <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Drag & Drop CIC-IDS2017 CSV File Here or <span class="text-cyan-400 underline">Browse Local Files</span></div>
+            <p class="text-xs text-slate-500 font-mono">Accepts CSV with dst_port, flow_duration, packets, throughput, flags, variance</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Summary KPIs -->
+      <div id="batchKpiSection" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-medium">Batch Total Analyzed</div>
+          <div id="batchTotalCount" class="text-xl font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-medium">Threats Identified</div>
+          <div id="batchThreatCount" class="text-xl font-bold font-mono text-accent-crimson mt-1">0</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-medium">Zero-Days Discovered</div>
+          <div id="batchZeroDayCount" class="text-xl font-bold font-mono text-purple-400 mt-1">0</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-medium">Average Risk Score</div>
+          <div id="batchAvgRisk" class="text-xl font-bold font-mono text-amber-400 mt-1">0.0</div>
+        </div>
+      </div>
+
+      <!-- Batch Results Table -->
+      <div id="batchResultsContainer" class="hidden bg-obsidian-card border border-obsidian-border rounded-xl overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-obsidian-border bg-obsidian-800/50 flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Batch Inference Results</h3>
+          <span class="text-xs text-slate-400">Click any row to inspect SHAP attributions in drawer</span>
+        </div>
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-obsidian-800 text-slate-400 uppercase font-mono tracking-wider sticky top-0 z-10 border-b border-obsidian-border">
+              <tr>
+                <th class="py-2.5 px-3">Event ID</th>
+                <th class="py-2.5 px-3">Source IP</th>
+                <th class="py-2.5 px-3">Dst Port</th>
+                <th class="py-2.5 px-3">Threat Classification</th>
+                <th class="py-2.5 px-3">Detection Engine</th>
+                <th class="py-2.5 px-3">Risk Score</th>
+                <th class="py-2.5 px-3">MITRE ID</th>
+                <th class="py-2.5 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="batchTableBody" class="divide-y divide-obsidian-border font-mono-numbers">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= TAB 3: MODEL & XAI EVALUATION ================= -->
+    <div id="tabContent-model-eval" class="tab-content hidden space-y-6">
+      
+      <!-- Metrics Overview Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-semibold">Test Accuracy</div>
+          <div id="metricsAcc" class="text-xl font-bold font-mono text-cyan-400 mt-1">--</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-semibold">Macro Precision</div>
+          <div id="metricsPrec" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-semibold">Macro Recall</div>
+          <div id="metricsRec" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-semibold">Macro F1-Score</div>
+          <div id="metricsF1" class="text-xl font-bold font-mono text-emerald-400 mt-1">--</div>
+        </div>
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-4">
+          <div class="text-xs uppercase text-slate-400 font-semibold">Weighted ROC-AUC</div>
+          <div id="metricsAuc" class="text-xl font-bold font-mono text-cyan-400 mt-1">--</div>
+        </div>
+      </div>
+
+      <!-- 5x5 Confusion Matrix & Per-Class Metrics -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- 5x5 Confusion Matrix Heatmap -->
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">5×5 Multi-Class Confusion Matrix Heatmap</h3>
+              <p class="text-[11px] text-slate-400">Actual vs. Predicted Evaluation (Validation Split)</p>
+            </div>
+            <span class="text-xs font-mono text-cyan-400">80/20 Stratified</span>
+          </div>
+
+          <div class="overflow-x-auto mt-2">
+            <div id="confusionMatrixContainer" class="min-w-[340px]">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Per-Class Performance Table -->
+        <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Per-Class Precision, Recall & F1 Breakdown</h3>
+              <p class="text-[11px] text-slate-400">Detailed Classification Metrics by Vector</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto mt-2">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-obsidian-800 text-slate-400 uppercase font-mono tracking-wider border-b border-obsidian-border">
+                <tr>
+                  <th class="py-2.5 px-3">Class</th>
+                  <th class="py-2.5 px-3">Precision</th>
+                  <th class="py-2.5 px-3">Recall</th>
+                  <th class="py-2.5 px-3">F1-Score</th>
+                  <th class="py-2.5 px-3 text-right">Support</th>
+                </tr>
+              </thead>
+              <tbody id="perClassTableBody" class="divide-y divide-obsidian-border font-mono-numbers">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Global Feature Importance Horizontal Bar Chart -->
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Global Feature Importance (XGBoost Gini Impurity)</h3>
+            <p class="text-[11px] text-slate-400">10 Numerical Telemetry Features Ranked by Global Information Gain</p>
+          </div>
+        </div>
+        <div class="relative min-h-[220px]">
+          <canvas id="featureImportanceChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= TAB 4: ACTIVE SOAR CONTAINMENT CONSOLE ================= -->
+    <div id="tabContent-soar-console" class="tab-content hidden space-y-6">
+      
+      <div class="bg-obsidian-card border border-obsidian-border rounded-xl p-5 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-obsidian-border pb-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              Active SOAR Quarantine & Containment Registry
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Automated firewall rules, egress drops, and quarantine states actively blocking hostiles.</p>
+          </div>
+          <div class="text-xs font-mono px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-lg">
+            Active Blocked Rules: <span id="soarRulesCount" class="font-bold">0</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4 max-h-[500px] overflow-y-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-obsidian-800 text-slate-400 uppercase font-mono tracking-wider sticky top-0 z-10 border-b border-obsidian-border">
+              <tr>
+                <th class="py-2.5 px-3">Blocked Attacker IP</th>
+                <th class="py-2.5 px-3">Threat Classification</th>
+                <th class="py-2.5 px-3">MITRE ID</th>
+                <th class="py-2.5 px-3">Executed Firewall / WAF Command</th>
+                <th class="py-2.5 px-3">Containment Timestamp</th>
+                <th class="py-2.5 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="soarTableBody" class="divide-y divide-obsidian-border font-mono-numbers">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= SLIDE-OVER XAI FORENSIC & SOAR INSPECTION DRAWER ================= -->
+  <div id="drawerBackdrop" onclick="closeDrawer()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+  
+  <div id="forensicDrawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-obsidian-card border-l border-obsidian-border z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-4 border-b border-obsidian-border flex items-center justify-between bg-obsidian-800/80">
+      <div class="flex items-center space-x-3">
+        <div id="drawerIconBg" class="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider">XAI Forensic Inspection</h2>
+          <p id="drawerEventId" class="text-xs font-mono text-cyan-400">EVT-XXXX</p>
+        </div>
+      </div>
+      <button onclick="closeDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
+      
+      <!-- Key Threat Badges -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="drawerThreatBadge" class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30">THREAT</span>
+        <span id="drawerEngineBadge" class="px-2.5 py-1 rounded text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">XGBoost</span>
+        <span id="drawerStatusBadge" class="px-2.5 py-1 rounded text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">ACTIVE</span>
+        <div class="ml-auto flex items-center gap-1 text-slate-400 font-mono">
+          <span>Risk:</span>
+          <span id="drawerRiskScore" class="font-bold text-sm text-white">95</span>/100
+        </div>
+      </div>
+
+      <!-- MITRE ATT&CK Tactic & Technique Card -->
+      <div class="bg-obsidian-800/60 border border-obsidian-border rounded-xl p-4">
+        <div class="flex items-center justify-between text-slate-300 mb-1">
+          <span class="uppercase tracking-wider font-semibold text-[10px] text-slate-400">MITRE ATT&CK Framework Mapping</span>
+          <span id="drawerMitreId" class="font-mono font-bold text-cyan-400">T1498</span>
+        </div>
+        <div id="drawerMitreName" class="font-semibold text-sm text-white">Network Denial of Service</div>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-[11px] text-slate-400">Tactic: <strong id="drawerMitreTactic" class="text-slate-200">Impact</strong></span>
+          <span class="text-slate-600">|</span>
+          <span class="text-[11px] text-slate-400">Severity: <strong id="drawerSeverity" class="text-red-400">CRITICAL</strong></span>
+        </div>
+      </div>
+
+      <!-- SHAP Feature Contribution Horizontal Bar Chart -->
+      <div class="bg-obsidian-800/60 border border-obsidian-border rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="uppercase tracking-wider font-semibold text-[10px] text-slate-400">SHAP Feature Attribution (TreeExplainer)</span>
+          <span class="text-[10px] font-mono text-cyan-400">Top 4 Primary Deviations</span>
+        </div>
+        <div class="relative min-h-[160px]">
+          <canvas id="drawerShapChart"></canvas>
+        </div>
+      </div>
+
+      <!-- AI Incident Commander Forensic Brief (NIST Aligned) -->
+      <div class="bg-obsidian-800/60 border border-obsidian-border rounded-xl p-4">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="uppercase tracking-wider font-semibold text-[10px] text-slate-400 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            AI Incident Commander Forensic Brief
+          </span>
+          <span class="text-[10px] font-mono text-slate-500">NIST SP 800-61 Rev 2</span>
+        </div>
+        <p id="drawerAiSummary" class="text-slate-300 leading-relaxed font-sans text-xs">
+          Forensic brief loading...
+        </p>
+      </div>
+
+      <!-- Full 10-Feature Flow Telemetry Breakdown Grid -->
+      <div class="bg-obsidian-800/60 border border-obsidian-border rounded-xl p-4">
+        <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider mb-2.5">
+          Full 10-Feature Flow Telemetry
+        </div>
+        <div id="drawerTelemetryGrid" class="grid grid-cols-2 gap-2 font-mono text-[11px]">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer / Containment Action -->
+    <div class="p-5 border-t border-obsidian-border bg-obsidian-800/80 flex items-center justify-between gap-3">
+      <div class="text-xs text-slate-400">
+        Host IP: <strong id="drawerFooterIp" class="text-slate-200 font-mono">192.168.1.100</strong>
+      </div>
+      <button id="drawerContainBtn" onclick="executeDrawerContainment()" class="px-4 py-2 rounded-lg bg-accent-crimson hover:bg-rose-600 text-white font-semibold text-xs transition-all shadow-md flex items-center gap-2 glow-crimson">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+        <span>Execute SOAR Containment</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
+  <script>
+    // State Store
+    let currentAlerts = [];
+    let isLiveStreaming = true;
+    let liveStreamTimer = null;
+    let activeDrawerAlert = null;
+    let timelineChart = null;
+    let distributionChart = null;
+    let shapChart = null;
+    let featureImportanceChart = null;
+
+    // Semantic Colors
+    const THREAT_COLORS = {
+      'Normal': { badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30', border: '#10b981' },
+      'DDoS_Hulk': { badge: 'bg-red-500/10 text-red-400 border border-red-500/30', border: '#ff3b5c' },
+      'SSH_BruteForce': { badge: 'bg-amber-500/10 text-amber-400 border border-amber-500/30', border: '#f59e0b' },
+      'PortScan': { badge: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30', border: '#eab308' },
+      'SQL_Injection': { badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/30', border: '#f43f5e' },
+      'ZeroDay_Anomaly': { badge: 'bg-purple-500/15 text-purple-300 border border-purple-500/40', border: '#a855f7' }
+    };
+
+    // Initialize Application
+    document.addEventListener('DOMContentLoaded', async () => {
+      initCharts();
+      await fetchInitialState();
+      startLiveStream();
+
+      // ESC key to close drawer
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDrawer();
+      });
+    });
+
+    // ---------------- CHART INITIALIZATION ----------------
+    function initCharts() {
+      // 1. Timeline Line Chart
+      const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+      const gradient = ctxTimeline.createLinearGradient(0, 0, 0, 180);
+      gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
+      gradient.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+
+      timelineChart = new Chart(ctxTimeline, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Threat Risk Score',
+            data: [],
+            borderColor: '#00e5ff',
+            backgroundColor: gradient,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#00e5ff',
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0e1626',
+              borderColor: '#1e293b',
+              borderWidth: 1,
+              titleFont: { family: 'JetBrains Mono', size: 11 },
+              bodyFont: { family: 'JetBrains Mono', size: 11 }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(30, 41, 59, 0.4)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(30, 41, 59, 0.4)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+            }
+          }
+        }
+      });
+
+      // 2. Distribution Doughnut Chart
+      const ctxDist = document.getElementById('distributionChart').getContext('2d');
+      distributionChart = new Chart(ctxDist, {
+        type: 'doughnut',
+        data: {
+          labels: ['Normal', 'DDoS', 'SSH Brute', 'PortScan', 'SQLi', 'Zero-Day'],
+          datasets: [{
+            data: [1, 0, 0, 0, 0, 0],
+            backgroundColor: ['#10b981', '#ff3b5c', '#f59e0b', '#eab308', '#f43f5e', '#a855f7'],
+            borderWidth: 2,
+            borderColor: '#070b14'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#94a3b8',
+                font: { family: 'JetBrains Mono', size: 10 },
+                boxWidth: 10,
+                padding: 6
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ---------------- TAB NAVIGATION ----------------
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'border-cyan-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeBtn.classList.add('text-cyan-400', 'border-cyan-400');
+      }
+      const activeContent = document.getElementById(`tabContent-${tabId}`);
+      if (activeContent) {
+        activeContent.classList.remove('hidden');
+      }
+
+      if (tabId === 'model-eval') {
+        fetchModelMetrics();
+      } else if (tabId === 'soar-console') {
+        refreshSoarTable();
+      }
+    }
+
+    // ---------------- STATE MANAGEMENT ----------------
+    async function fetchInitialState() {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) throw new Error('Failed to load state');
+        const data = await res.json();
+        updateKpis(data.kpis);
+        currentAlerts = data.recent_alerts || [];
+        renderAlertsTable(currentAlerts);
+        updateTimelineChart(data.timeline || []);
+        updateDistributionChart(data.threat_distribution || {});
+      } catch (err) {
+        showToast('Initialization error: ' + err.message, 'error');
+      }
+    }
+
+    function updateKpis(kpi) {
+      if (!kpi) return;
+      document.getElementById('kpiTotalFlows').innerText = kpi.total_flows.toLocaleString();
+      document.getElementById('kpiThreats').innerText = kpi.threats_detected.toLocaleString();
+      document.getElementById('kpiZeroDay').innerText = kpi.zero_day_anomalies.toLocaleString();
+      document.getElementById('kpiSoarBlocks').innerText = kpi.active_soar_blocks.toLocaleString();
+      document.getElementById('kpiMacroF1').innerText = (kpi.model_macro_f1 || 0.999).toFixed(3);
+    }
+
+    // ---------------- LIVE STREAMING ----------------
+    function toggleLiveStream() {
+      isLiveStreaming = !isLiveStreaming;
+      const btn = document.getElementById('streamToggleBtn');
+      const dot = document.getElementById('streamDot');
+      const text = document.getElementById('streamText');
+
+      if (isLiveStreaming) {
+        btn.className = 'flex items-center space-x-1.5 px-3 py-1 rounded text-xs font-mono font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        text.innerText = 'ON';
+        startLiveStream();
+        showToast('Live network telemetry streaming resumed', 'info');
+      } else {
+        btn.className = 'flex items-center space-x-1.5 px-3 py-1 rounded text-xs font-mono font-bold transition-all bg-slate-800 text-slate-400 border border-slate-700';
+        dot.className = 'w-2 h-2 rounded-full bg-slate-500';
+        text.innerText = 'OFF';
+        stopLiveStream();
+        showToast('Live stream paused', 'info');
+      }
+    }
+
+    function startLiveStream() {
+      if (liveStreamTimer) clearInterval(liveStreamTimer);
+      liveStreamTimer = setInterval(async () => {
+        if (!isLiveStreaming) return;
+        try {
+          const res = await fetch('/api/telemetry/next');
+          if (!res.ok) return;
+          const data = await res.json();
+          handleIncomingAlert(data.alert);
+          updateKpis(data.kpis);
+          updateTimelineChart(data.timeline);
+          updateDistributionChart(data.threat_distribution);
+        } catch (e) {
+          console.error('Live telemetry poll error:', e);
+        }
+      }, 2200);
+    }
+
+    function stopLiveStream() {
+      if (liveStreamTimer) {
+        clearInterval(liveStreamTimer);
+        liveStreamTimer = null;
+      }
+    }
+
+    function handleIncomingAlert(alert) {
+      currentAlerts.unshift(alert);
+      if (currentAlerts.length > 250) currentAlerts.pop();
+      renderAlertsTable(currentAlerts);
+    }
+
+    // ---------------- ATTACK SIMULATION ----------------
+    async function simulateAttack(attackType) {
+      try {
+        const res = await fetch(`/api/simulate/${attackType}`, { method: 'POST' });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        handleIncomingAlert(data.alert);
+        updateKpis(data.kpis);
+        updateTimelineChart(data.timeline);
+        updateDistributionChart(data.threat_distribution);
+        showToast(`Injected attack vector: ${attackType}`, 'success');
+      } catch (err) {
+        showToast(`Simulation failed: ${err.message}`, 'error');
+      }
+    }
+
+    // ---------------- ALERTS TABLE RENDERING ----------------
+    function renderAlertsTable(alerts) {
+      const tbody = document.getElementById('alertsTableBody');
+      const countBadge = document.getElementById('alertCountBadge');
+      countBadge.innerText = `${alerts.length} events`;
+      tbody.innerHTML = '';
+
+      alerts.slice(0, 100).forEach(alert => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-obsidian-hover/80 transition-colors cursor-pointer group border-b border-obsidian-border/50';
+        tr.onclick = (e) => {
+          // If action button was clicked, handled separately
+          openDrawer(alert);
+        };
+
+        const threatStyle = THREAT_COLORS[alert.threat_label] || { badge: 'bg-slate-800 text-slate-300', border: '#64748b' };
+        
+        // Engine badge
+        const engineBadge = alert.engine_source === 'Isolation Forest'
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">Isolation Forest</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">XGBoost</span>';
+
+        // Risk Score Bar
+        const riskScore = alert.risk_score;
+        let riskColor = 'bg-cyan-400';
+        if (riskScore >= 80) riskColor = 'bg-accent-crimson';
+        else if (riskScore >= 50) riskColor = 'bg-accent-amber';
+
+        // Status Badge
+        let statusBadge = '';
+        if (alert.status === 'CONTAINED') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">CONTAINED</span>';
+        } else if (alert.threat_label === 'Normal') {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400">BENIGN</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">ACTIVE</span>';
+        }
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-slate-400">${alert.timestamp.split(' ')[1] || alert.timestamp}</td>
+          <td class="py-2.5 px-3 font-mono font-medium text-slate-200">${alert.src_ip}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-400">${alert.dst_port}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold ${threatStyle.badge}">
+              ${alert.threat_label}
+            </span>
+          </td>
+          <td class="py-2.5 px-3">${engineBadge}</td>
+          <td class="py-2.5 px-3">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden w-16">
+                <div class="${riskColor} h-1.5 rounded-full" style="width: ${riskScore}%"></div>
+              </div>
+              <span class="font-mono text-xs text-slate-300">${riskScore}</span>
+            </div>
+          </td>
+          <td class="py-2.5 px-3 font-mono text-slate-400">${alert.mitre_technique_id}</td>
+          <td class="py-2.5 px-3">${statusBadge}</td>
+          <td class="py-2.5 px-3 text-right">
+            <button class="px-2.5 py-1 rounded bg-slate-800 hover:bg-cyan-950 hover:text-cyan-300 hover:border-cyan-500/40 border border-slate-700 text-slate-300 text-[11px] font-mono transition-colors">
+              Inspect
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------------- CHART UPDATERS ----------------
+    function updateTimelineChart(timeline) {
+      if (!timelineChart || !timeline) return;
+      const labels = timeline.map(t => t.timestamp);
+      const scores = timeline.map(t => t.risk_score);
+      timelineChart.data.labels = labels;
+      timelineChart.data.datasets[0].data = scores;
+      timelineChart.update('none');
+    }
+
+    function updateDistributionChart(dist) {
+      if (!distributionChart || !dist) return;
+      const values = [
+        dist['Normal'] || 0,
+        dist['DDoS_Hulk'] || 0,
+        dist['SSH_BruteForce'] || 0,
+        dist['PortScan'] || 0,
+        dist['SQL_Injection'] || 0,
+        dist['ZeroDay_Anomaly'] || 0
+      ];
+      distributionChart.data.datasets[0].data = values;
+      distributionChart.update('none');
+    }
+
+    // ---------------- XAI FORENSIC & SOAR DRAWER ----------------
+    function openDrawer(alert) {
+      activeDrawerAlert = alert;
+      const drawer = document.getElementById('forensicDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+
+      // Populate text details
+      document.getElementById('drawerEventId').innerText = alert.event_id || 'EVT-AUTO';
+      document.getElementById('drawerThreatBadge').innerText = alert.threat_label;
+      const threatColor = THREAT_COLORS[alert.threat_label] || { badge: 'bg-slate-800 text-slate-300' };
+      document.getElementById('drawerThreatBadge').className = `px-2.5 py-1 rounded text-xs font-mono font-bold ${threatColor.badge}`;
+
+      document.getElementById('drawerEngineBadge').innerText = alert.engine_source;
+      document.getElementById('drawerStatusBadge').innerText = alert.status;
+      document.getElementById('drawerRiskScore').innerText = alert.risk_score;
+
+      document.getElementById('drawerMitreId').innerText = alert.mitre_technique_id;
+      document.getElementById('drawerMitreName').innerText = alert.mitre_technique_name;
+      document.getElementById('drawerMitreTactic').innerText = alert.mitre_tactic;
+      document.getElementById('drawerSeverity').innerText = alert.severity;
+
+      document.getElementById('drawerAiSummary').innerText = alert.ai_incident_summary || 'Analyzing telemetry parameters...';
+      document.getElementById('drawerFooterIp').innerText = alert.src_ip;
+
+      // Update contain button state
+      const containBtn = document.getElementById('drawerContainBtn');
+      if (alert.status === 'CONTAINED') {
+        containBtn.disabled = true;
+        containBtn.className = 'px-4 py-2 rounded-lg bg-slate-800 text-slate-400 font-semibold text-xs border border-slate-700 cursor-not-allowed flex items-center gap-2';
+        containBtn.innerHTML = '<span>IP Contained (Active Block)</span>';
+      } else if (alert.threat_label === 'Normal') {
+        containBtn.disabled = false;
+        containBtn.className = 'px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 flex items-center gap-2';
+        containBtn.innerHTML = '<span>Apply Preventive Quarantine</span>';
+      } else {
+        containBtn.disabled = false;
+        containBtn.className = 'px-4 py-2 rounded-lg bg-accent-crimson hover:bg-rose-600 text-white font-semibold text-xs transition-all shadow-md flex items-center gap-2 glow-crimson';
+        containBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          <span>Execute SOAR Containment</span>
+        `;
+      }
+
+      // Populate 10-Feature Telemetry Grid
+      const grid = document.getElementById('drawerTelemetryGrid');
+      grid.innerHTML = '';
+      const feats = alert.all_features || {};
+      for (const [k, v] of Object.entries(feats)) {
+        const item = document.createElement('div');
+        item.className = 'bg-obsidian-900/70 border border-obsidian-border rounded p-2';
+        item.innerHTML = `
+          <div class="text-[10px] text-slate-400 truncate">${k}</div>
+          <div class="font-bold text-slate-200 mt-0.5 truncate">${v}</div>
+        `;
+        grid.appendChild(item);
+      }
+
+      // Render SHAP Horizontal Bar Chart
+      renderShapChart(alert.top_shap_features || []);
+
+      // Show drawer
+      backdrop.classList.remove('hidden');
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('forensicDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+      drawer.classList.add('translate-x-full');
+      backdrop.classList.add('hidden');
+    }
+
+    function renderShapChart(shapFeatures) {
+      const ctx = document.getElementById('drawerShapChart').getContext('2d');
+      if (shapChart) {
+        shapChart.destroy();
+      }
+
+      const labels = shapFeatures.map(s => `${s.feature} (${s.value})`);
+      const data = shapFeatures.map(s => s.shap_impact);
+      const bgColors = data.map(d => d >= 0 ? '#ff3b5c' : '#00e5ff');
+
+      shapChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'SHAP Impact (Attribution)',
+            data: data,
+            backgroundColor: bgColors,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0e1626',
+              borderColor: '#1e293b',
+              borderWidth: 1,
+              titleFont: { family: 'JetBrains Mono', size: 10 },
+              bodyFont: { family: 'JetBrains Mono', size: 10 }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(30, 41, 59, 0.4)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } }
+            }
+          }
+        }
+      });
+    }
+
+    async function executeDrawerContainment() {
+      if (!activeDrawerAlert) return;
+      const ip = activeDrawerAlert.src_ip;
+      const cmd = activeDrawerAlert.mitigation_cmd;
+      const threat = activeDrawerAlert.threat_label;
+      const mitre = activeDrawerAlert.mitre_technique_id;
+
+      try {
+        const res = await fetch('/api/soar/contain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip, command: cmd, threat_label: threat, mitre_id: mitre })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+
+        // Update active alert & drawer
+        activeDrawerAlert.status = 'CONTAINED';
+        document.getElementById('drawerStatusBadge').innerText = 'CONTAINED';
+        const containBtn = document.getElementById('drawerContainBtn');
+        containBtn.disabled = true;
+        containBtn.className = 'px-4 py-2 rounded-lg bg-slate-800 text-slate-400 font-semibold text-xs border border-slate-700 cursor-not-allowed flex items-center gap-2';
+        containBtn.innerHTML = '<span>IP Contained (Active Block)</span>';
+
+        // Update in all local alerts and re-render
+        currentAlerts.forEach(a => {
+          if (a.src_ip === ip) a.status = 'CONTAINED';
+        });
+        renderAlertsTable(currentAlerts);
+
+        // Update KPI
+        const kpiRes = await fetch('/api/state');
+        if (kpiRes.ok) {
+          const s = await kpiRes.json();
+          updateKpis(s.kpis);
+        }
+
+        showToast(`SOAR Firewall Block Activated for ${ip}`, 'success');
+      } catch (err) {
+        showToast('SOAR Containment Failed: ' + err.message, 'error');
+      }
+    }
+
+    // ---------------- TAB 2: BATCH CSV FORENSICS ----------------
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.add('border-cyan-400');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('border-cyan-400');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('border-cyan-400');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        uploadCsvFile(e.dataTransfer.files[0]);
+      }
+    }
+
+    function handleFileSelect(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        uploadCsvFile(e.target.files[0]);
+      }
+    }
+
+    async function uploadCsvFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      showToast(`Uploading and analyzing ${file.name}...`, 'info');
+
+      try {
+        const res = await fetch('/api/upload-csv', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        renderBatchResults(data);
+        showToast(`Analyzed ${data.total_uploaded} flows successfully!`, 'success');
+      } catch (err) {
+        showToast('Batch analysis failed: ' + err.message, 'error');
+      }
+    }
+
+    async function runSampleCSV() {
+      const btn = document.getElementById('runSampleBtn');
+      btn.disabled = true;
+      btn.innerText = 'Analyzing 50 Sample Flows...';
+      showToast('Executing batch inference on sample CIC-IDS2017 dataset...', 'info');
+
+      try {
+        const res = await fetch('/api/analyze-sample-csv', { method: 'POST' });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        renderBatchResults(data);
+        showToast('Batch analysis complete! 50 flows evaluated.', 'success');
+      } catch (err) {
+        showToast('Failed to run sample dataset: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Run Sample CIC-IDS2017 Dataset (50 Flows)
+        `;
+      }
+    }
+
+    function renderBatchResults(data) {
+      document.getElementById('batchKpiSection').classList.remove('hidden');
+      document.getElementById('batchResultsContainer').classList.remove('hidden');
+
+      document.getElementById('batchTotalCount').innerText = data.total_uploaded;
+      document.getElementById('batchThreatCount').innerText = data.threats_detected;
+      document.getElementById('batchZeroDayCount').innerText = data.zero_day_count;
+      document.getElementById('batchAvgRisk').innerText = data.avg_risk_score;
+
+      const tbody = document.getElementById('batchTableBody');
+      tbody.innerHTML = '';
+
+      data.results.forEach(alert => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-obsidian-hover/80 transition-colors cursor-pointer border-b border-obsidian-border/50';
+        tr.onclick = () => openDrawer(alert);
+
+        const threatStyle = THREAT_COLORS[alert.threat_label] || { badge: 'bg-slate-800 text-slate-300' };
+        const engineBadge = alert.engine_source === 'Isolation Forest'
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">Isolation Forest</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">XGBoost</span>';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-mono text-cyan-400">${alert.event_id || 'CSV'}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-200">${alert.src_ip}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-400">${alert.dst_port}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold ${threatStyle.badge}">
+              ${alert.threat_label}
+            </span>
+          </td>
+          <td class="py-2.5 px-3">${engineBadge}</td>
+          <td class="py-2.5 px-3 font-mono font-bold text-slate-300">${alert.risk_score}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-400">${alert.mitre_technique_id}</td>
+          <td class="py-2.5 px-3 text-right">
+            <button class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-950 hover:text-cyan-300 border border-slate-700 text-slate-300 text-[11px] font-mono">
+              Inspect
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------------- TAB 3: MODEL & XAI EVALUATION ----------------
+    async function fetchModelMetrics() {
+      try {
+        const res = await fetch('/api/metrics');
+        if (!res.ok) throw new Error('Failed to fetch metrics');
+        const m = await res.json();
+
+        // Cards
+        document.getElementById('metricsAcc').innerText = (m.accuracy * 100).toFixed(2) + '%';
+        document.getElementById('metricsPrec').innerText = (m.macro_precision * 100).toFixed(2) + '%';
+        document.getElementById('metricsRec').innerText = (m.macro_recall * 100).toFixed(2) + '%';
+        document.getElementById('metricsF1').innerText = (m.macro_f1 * 100).toFixed(2) + '%';
+        document.getElementById('metricsAuc').innerText = m.weighted_roc_auc.toFixed(4);
+
+        // 5x5 Confusion Matrix Heatmap
+        renderConfusionMatrix(m.class_labels, m.confusion_matrix);
+
+        // Per-Class Table
+        renderPerClassTable(m.per_class);
+
+        // Feature Importance Chart
+        renderFeatureImportanceChart(m.global_feature_importances);
+      } catch (err) {
+        showToast('Error loading metrics: ' + err.message, 'error');
+      }
+    }
+
+    function renderConfusionMatrix(labels, matrix) {
+      const container = document.getElementById('confusionMatrixContainer');
+      let html = '<table class="w-full text-center border-collapse text-xs font-mono">';
+      
+      // Header
+      html += '<thead><tr><th class="p-2 text-slate-500 text-left">Actual \\ Pred</th>';
+      labels.forEach(l => {
+        html += `<th class="p-2 text-slate-300 uppercase">${l}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      // Rows
+      matrix.forEach((row, rIdx) => {
+        html += `<tr><td class="p-2 text-slate-300 font-semibold text-left border-r border-obsidian-border">${labels[rIdx]}</td>`;
+        row.forEach((val, cIdx) => {
+          let cellBg = 'bg-obsidian-900/40 text-slate-500';
+          if (rIdx === cIdx) {
+            // Diagonal (correct predictions)
+            cellBg = val > 0 ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30' : 'bg-obsidian-900 text-slate-600';
+          } else if (val > 0) {
+            // Misclassification
+            cellBg = 'bg-rose-500/25 text-rose-300 font-bold border border-rose-500/40';
+          }
+          html += `<td class="p-2 ${cellBg} m-0.5 rounded">${val}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function renderPerClassTable(perClass) {
+      const tbody = document.getElementById('perClassTableBody');
+      tbody.innerHTML = '';
+      for (const [cls, vals] of Object.entries(perClass)) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-obsidian-border/50 hover:bg-obsidian-hover/50';
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-semibold text-slate-200">${cls}</td>
+          <td class="py-2 px-3 text-cyan-400 font-mono">${(vals.precision * 100).toFixed(1)}%</td>
+          <td class="py-2 px-3 text-cyan-400 font-mono">${(vals.recall * 100).toFixed(1)}%</td>
+          <td class="py-2 px-3 text-emerald-400 font-mono font-bold">${(vals.f1_score * 100).toFixed(1)}%</td>
+          <td class="py-2 px-3 text-right text-slate-400 font-mono">${vals.support}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function renderFeatureImportanceChart(importances) {
+      const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+      if (featureImportanceChart) {
+        featureImportanceChart.destroy();
+      }
+
+      const labels = importances.map(i => i.feature);
+      const data = importances.map(i => i.importance);
+
+      featureImportanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Feature Importance',
+            data: data,
+            backgroundColor: '#00e5ff',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0e1626',
+              borderColor: '#1e293b',
+              borderWidth: 1,
+              titleFont: { family: 'JetBrains Mono', size: 10 },
+              bodyFont: { family: 'JetBrains Mono', size: 10 }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(30, 41, 59, 0.4)' },
+              ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 9 } }
+            }
+          }
+        }
+      });
+    }
+
+    // ---------------- TAB 4: ACTIVE SOAR CONSOLE ----------------
+    async function refreshSoarTable() {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) throw new Error('Failed to load state');
+        const data = await res.json();
+        const blocklist = data.soar_blocklist || [];
+
+        document.getElementById('soarRulesCount').innerText = blocklist.length;
+        const tbody = document.getElementById('soarTableBody');
+        tbody.innerHTML = '';
+
+        if (blocklist.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-8 text-center text-slate-500 font-mono">
+                No active attacker containment rules. Execute SOAR quarantine from any alert inspection drawer.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        blocklist.forEach(entry => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-obsidian-border/50 hover:bg-obsidian-hover/50';
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-mono font-bold text-accent-crimson">${entry.ip}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-300">${entry.threat_label || 'Hostile'}</td>
+            <td class="py-2.5 px-3 font-mono text-cyan-400">${entry.mitre_id || 'T1048'}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-400 max-w-xs truncate" title="${entry.command}">
+              ${entry.command}
+            </td>
+            <td class="py-2.5 px-3 text-slate-400">${entry.timestamp}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button onclick="releaseSoarBlock('${entry.ip}')" class="px-3 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono font-semibold transition-colors">
+                Release Block
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        showToast('Error refreshing SOAR blocklist: ' + err.message, 'error');
+      }
+    }
+
+    async function releaseSoarBlock(ip) {
+      try {
+        const res = await fetch('/api/soar/release', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        showToast(`IP ${ip} released from active firewall blocklist`, 'info');
+        refreshSoarTable();
+
+        // Update local alerts
+        currentAlerts.forEach(a => {
+          if (a.src_ip === ip) {
+            a.status = a.threat_label === 'Normal' ? 'BENIGN' : 'ACTIVE';
+          }
+        });
+        renderAlertsTable(currentAlerts);
+
+        const stateRes = await fetch('/api/state');
+        if (stateRes.ok) {
+          const s = await stateRes.json();
+          updateKpis(s.kpis);
+        }
+      } catch (err) {
+        showToast('Release failed: ' + err.message, 'error');
+      }
+    }
+
+    // ---------------- TOAST SYSTEM ----------------
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let borderCol = 'border-cyan-500/40 text-cyan-300 bg-obsidian-card';
+      let icon = '<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+
+      if (type === 'success') {
+        borderCol = 'border-emerald-500/40 text-emerald-300 bg-obsidian-card';
+        icon = '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      } else if (type === 'error') {
+        borderCol = 'border-rose-500/40 text-rose-300 bg-obsidian-card';
+        icon = '<svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+      }
+
+      toast.className = `flex items-center space-x-2.5 px-4 py-2.5 rounded-lg border shadow-xl text-xs font-mono backdrop-blur transition-all duration-300 pointer-events-auto ${borderCol}`;
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
